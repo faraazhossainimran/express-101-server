@@ -7,7 +7,6 @@ const port = process.env.PORT || 5001;
 app.use(cors());
 app.use(express.json());
 
-
 const uri =
   "mongodb+srv://faraazhossainimran:4goqUUPoDFCzdj7R@cluster0.mko9qjp.mongodb.net/?retryWrites=true&w=majority";
 
@@ -23,31 +22,64 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     await client.connect();
-    const userCollection = client.db("userDB").collection("users")
+    const userCollection = client.db("userDB").collection("users");
     // post single Data endpoint
-    app.post('/users', async(req, res) => {
-    const user = req.body;
-    const result = await userCollection.insertOne(user)
-    console.log(result);
-    res.send(result)
-    })
-    // Delete User
-    app.delete('/users/:id', async(req, res) => {
-        const id = req.params.id
-        console.log(id);
-        const query = {
-            _id: new ObjectId(id)
-        }
-        const result = await userCollection.deleteOne(query)
-        res.send(result)
-    }) 
-    // Get user from frontend
-    app.get('/users', async(req, res) => {
-        const result =  await userCollection.find().toArray();
-        console.log(result);
-        res.send(result)
-    })
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      const result = await userCollection.insertOne(user);
+      console.log(result);
+      res.send(result);
+    });
+    // get single user details to update them
+    app.get("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+      const query = {
+        _id: new ObjectId(id),
+      };
+      const result = await userCollection.findOne(query);
+      res.send(result);
+    });
 
+    // update single user
+    app.put("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const data = req.body;
+      const filter = {
+        _id: new ObjectId(id),
+      };
+      const options = { upsert: true };
+      const updateUser = {
+        $set: {
+          username: data.username,
+          email: data.email,
+          password: data.password,
+        },
+      };
+      const result = await userCollection.updateOne(
+        filter,
+        updateUser,
+        options
+      );
+      res.send(result);
+    });
+
+    // Delete User
+    app.delete("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+      const query = {
+        _id: new ObjectId(id),
+      };
+      const result = await userCollection.deleteOne(query);
+      res.send(result);
+    });
+    // Get all users from frontend
+    app.get("/users", async (req, res) => {
+      const result = await userCollection.find().toArray();
+      console.log(result);
+      res.send(result);
+    });
 
     await client.db("admin").command({ ping: 1 });
 
