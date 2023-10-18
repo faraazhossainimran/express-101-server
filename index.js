@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const port = process.env.PORT || 5001;
 // middleware
@@ -31,7 +31,17 @@ async function run() {
     console.log(result);
     res.send(result)
     })
-
+    // Delete User
+    app.delete('/users/:id', async(req, res) => {
+        const id = req.params.id
+        console.log(id);
+        const query = {
+            _id: new ObjectId(id)
+        }
+        const result = await userCollection.deleteOne(query)
+        res.send(result)
+    }) 
+    // Get user from frontend
     app.get('/users', async(req, res) => {
         const result =  await userCollection.find().toArray();
         console.log(result);
