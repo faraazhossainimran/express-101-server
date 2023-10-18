@@ -24,6 +24,7 @@ async function run() {
   try {
     await client.connect();
     const userCollection = client.db("userDB").collection("users")
+    // post single Data endpoint
     app.post('/users', async(req, res) => {
     const user = req.body;
     const result = await userCollection.insertOne(user)
@@ -31,7 +32,11 @@ async function run() {
     res.send(result)
     })
 
-
+    app.get('/users', async(req, res) => {
+        const result =  await userCollection.find().toArray();
+        console.log(result);
+        res.send(result)
+    })
 
 
     await client.db("admin").command({ ping: 1 });
